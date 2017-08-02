@@ -23,7 +23,7 @@ app.post('/speak', function (req, res) {
 server.listen(port, function () {
   console.log('Listening on port ' + port)
 });
-
+	
 function speak(text) {
 	io.emit('speakingStarted', { text: text });
 	
@@ -32,27 +32,28 @@ function speak(text) {
 		OutputFormat: 'pcm',
 		VoiceId: 'Ivy'
 	};
+			
+	const speaker = new Speaker({
+		channels: 1,
+		bitDepth: 16,
+		sampleRate: 16000
+	});
 
 	polly.synthesizeSpeech(params, (err, data) => {
 		if (err) {
 			console.log(err.code)
 		} else if (data) {
 			if (data.AudioStream instanceof Buffer) {
-                const speaker = new Speaker({
-                    channels: 1,
-                    bitDepth: 16,
-                    sampleRate: 16000
-                });
-				//Initiate the source
-                var bufferStream = new Stream.PassThrough()
-
-                //tell clients when the speaking is done (after a short delay)
-                speaker.on('flush', () => setTimeout(() => io.emit('speakingStopped', {}, 4000)));
-                
-                //convert AudioStream into a readable stream
+                var bufferStream = new Stream.PassThrough();
 				bufferStream.end(data.AudioStream)
-				//Pipe into Player
-				bufferStream.pipe(speaker)
+
+				bufferStream.on('readable', function() {
+					var chunk;
+					while (null !== (chunk = bufferStream.read())) {
+						speaker.write(chunk);
+					}
+					setTimeout(() => io.emit('speakingStopped'), 2000);
+				});
 			}
 		}
 	});
