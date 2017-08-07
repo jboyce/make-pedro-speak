@@ -23,12 +23,19 @@ app.post('/speak', function (req, res) {
 server.listen(port, function () {
   console.log('Listening on port ' + port)
 });
-	
+
 function speak(text) {
 	io.emit('speakingStarted', { text: text });
 	
+	const formattedText = `<speak>
+<prosody volume="+10dB">
+${text}
+</prosody>
+</speak>`;
+
 	const params = {
-		Text: text,
+		TextType: "ssml",
+		Text: formattedText,
 		OutputFormat: 'pcm',
 		VoiceId: 'Ivy'
 	};
