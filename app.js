@@ -15,7 +15,7 @@ const port = 8000;
 app.use(express.static('client'))
 app.use(bodyParser.text());
 app.post('/speak', function (req, res) {
-	console.log('received: ' + req.body);
+	console.log('received request: ' + req.body);
 	speak(req.body);
 	res.send(req.body);	
 });
@@ -27,7 +27,7 @@ server.listen(port, function () {
 function speak(text) {
 	io.emit('speakingStarted', { text: text });
 	
-	const formattedText = `<speak>
+	const ssmlMessage = `<speak>
 <prosody volume="+10dB">
 ${text}
 </prosody>
@@ -35,7 +35,7 @@ ${text}
 
 	const params = {
 		TextType: "ssml",
-		Text: formattedText,
+		Text: ssmlMessage,
 		OutputFormat: 'pcm',
 		VoiceId: 'Ivy'
 	};
@@ -48,11 +48,13 @@ ${text}
 
 	polly.synthesizeSpeech(params, (err, data) => {
 		if (err) {
-			console.log(err.code)
+			console.log(err.code);
 		} else if (data) {
+			console.log("retrieved audio buffer from aws.");
+
 			if (data.AudioStream instanceof Buffer) {
                 var bufferStream = new Stream.PassThrough();
-				bufferStream.end(data.AudioStream)
+				bufferStream.end(data.AudioStream);
 
 				bufferStream.on('readable', function() {
 					var chunk;
