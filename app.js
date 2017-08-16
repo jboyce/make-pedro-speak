@@ -9,7 +9,9 @@ const server = http.createServer(app);
 const io = require('socket.io').listen(server);
 
 require('./awsauth.js');
-const polly = new AWS.Polly();
+const polly = new AWS.Polly(
+	//{logger: console}
+);
 
 const port = 8000;
 app.use(express.static('client'))
