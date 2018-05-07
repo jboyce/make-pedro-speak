@@ -16,6 +16,7 @@
 	<p>
 	<input type="text" id="text">
 	<button onclick="speak()">speak</button>
+	<button onclick="identify()">identify</button>
 	<br />
 	<br />
 	<label id="speaking"></label>
@@ -36,6 +37,12 @@
 			var http = new XMLHttpRequest();
 			http.open('POST', '/speak', true);
 			http.send(text);
+		}
+
+		function identify(){
+			var http = new XMLHttpRequest();
+			http.open('POST', '/identify', true);
+			http.send();
 		}
 	</script>
 </body>
